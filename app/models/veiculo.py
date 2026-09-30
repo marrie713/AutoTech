@@ -4,4 +4,3 @@ class Veiculo:
         self.modelo = modelo
         self.ano = ano
 
-veiculo = Veiculo("DEF-5678", "Honda Civic", 2022)

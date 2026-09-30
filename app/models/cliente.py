@@ -1,6 +1,9 @@
 class Cliente:
-    def __init__(self, nome, telefone):
+    def __init__(self, nome, telefone, id=None):
+        self.id = id
         self.nome = nome
         self.telefone = telefone
 
-cliente = Cliente("Maria Oliveira", "34 98888-8888")
+    def __str__(self):
+        return f"{self.id} - {self.nome} - {self.telefone}"
+

@@ -8,7 +8,7 @@ class ClienteRepositorio:
         cursor = self.database.cursor()
 
         cursor.execute("""
-           CREATE TABLE IF NO EXISTS Clientes (
+           CREATE TABLE IF NOT EXISTS Clientes (
            id INTEGER PRIMARY KEY AUTOINCREMENT,
            nome TEXT NOT NULL,
            telefone TEXT NOT NULL)         
@@ -21,22 +21,19 @@ class ClienteRepositorio:
 
         cursor.execute("""
             INSERT INTO Clientes (nome, telefone)
-            values ("Maria", "17992299229") """, (
+            values (?, ?) """, (
                 cliente.nome,
                 cliente.telefone
             ))
 
         cliente.id = cursor.lastrowid
-
         self.database.commit()
 
     def buscarPorId(self, id):
         cursor = self.database.cursor()
 
         cursor.execute("""
-            SELECT * FROM Clientes WHERE id = ? """, (
-                id
-            ))
+            SELECT * FROM Clientes WHERE id = ? """, (id, ))
         
         registro = cursor.fetchone()
 
@@ -51,7 +48,7 @@ class ClienteRepositorio:
 
     def atualizar(self, cliente):
         cursor = self.database.cursor()
-        
+
         cursor.execute("""
             UPDATE Clientes SET nome = ?, telefone = ? WHERE id = ? """, (
                 cliente.nome, 
@@ -64,9 +61,7 @@ class ClienteRepositorio:
     def deletar(self, id):
         cursor = self.database.cursor()
 
-        cursor.execute("""DELETE FROM Clientes WHERE id = ?""",
-                        (id,
-        ))
+        cursor.execute("""DELETE FROM Clientes WHERE id = ?""", (id,))
 
         self.database.commit()
 

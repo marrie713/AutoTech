@@ -1,7 +1,7 @@
 class OrdemDeServico:
 
-    def __init__(self, numero, cliente, veiculo, mecanico):
-        self.numero = numero
+    def __init__(self, cliente, veiculo, mecanico, id=None):
+        self.id = id
         self.cliente = cliente
         self.veiculo = veiculo
         self.mecanico = mecanico

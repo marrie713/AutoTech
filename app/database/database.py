@@ -12,3 +12,5 @@ class Database:
 
     def fechar(self):
             self.conexao.close()
+
+    

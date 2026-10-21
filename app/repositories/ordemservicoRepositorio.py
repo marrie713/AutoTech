@@ -23,6 +23,7 @@ class OrdemservicoRepositorio:
                 cliente_id INTEGER NOT NULL,
                 veiculo_id INTEGER NOT NULL,
                 mecanico_id INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'Aberta',
                 FOREIGN KEY (cliente_id) REFERENCES Clientes(id),
                 FOREIGN KEY (veiculo_id) REFERENCES Veiculos(id),
                 FOREIGN KEY (mecanico_id) REFERENCES Mecanicos(id)
@@ -55,9 +56,9 @@ class OrdemservicoRepositorio:
         cursor = self.database.cursor()
 
         cursor.execute("""
-            INSERT INTO OrdensDeServico (cliente_id, veiculo_id, mecanico_id)
-            VALUES (?, ?, ?)
-        """, (ordem.cliente.id, ordem.veiculo.id, ordem.mecanico.id))
+            INSERT INTO OrdensDeServico (cliente_id, veiculo_id, mecanico_id, status)
+            VALUES (?, ?, ?, ?)
+        """, (ordem.cliente.id, ordem.veiculo.id, ordem.mecanico.id, ordem.status))
 
         ordem.id = cursor.lastrowid
 
@@ -99,9 +100,9 @@ class OrdemservicoRepositorio:
 
         cursor.execute("""
             UPDATE OrdensDeServico
-            SET cliente_id = ?, veiculo_id = ?, mecanico_id = ?
+            SET cliente_id = ?, veiculo_id = ?, mecanico_id = ?, status = ? 
             WHERE id = ?
-        """, (ordem.cliente.id, ordem.veiculo.id, ordem.mecanico.id, ordem.id))
+        """, (ordem.cliente.id, ordem.veiculo.id, ordem.mecanico.id, ordem.status, ordem.id))
 
         cursor.execute("DELETE FROM OS_Servicos WHERE os_id = ?", (ordem.id,))
         cursor.execute("DELETE FROM OS_Pecas WHERE os_id = ?", (ordem.id,))
@@ -123,7 +124,8 @@ class OrdemservicoRepositorio:
             id=registro[0],
             cliente=self.clienteRepositorio.buscarPorId(registro[1]),
             veiculo=self.veiculoRepositorio.buscarPorId(registro[2]),
-            mecanico=self.mecanicoRepositorio.buscarPorId(registro[3])
+            mecanico=self.mecanicoRepositorio.buscarPorId(registro[3]),
+            status=registro[4]
         )
 
         cursor = self.database.cursor()

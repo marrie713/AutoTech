@@ -40,7 +40,7 @@ def main():
 
     cliente = Cliente("João da Silva", "34 99999-9999")
     veiculo = Veiculo("ABC-1234", "Toyota Corolla", 2020)
-    mecanico = Mecanico("Carlos Oliveira", "Freios e suspensão")
+    mecanico = Mecanico("Carlos Oliveira", "Mecânica Geral")
     servico1 = Servico("Troca de pastilhas de freio", 180.00)
     servico2 = Servico("Alinhamento e balanceamento", 120.00)
     peca1 = Peca("Pastilha de freio", 250.00, 10)
@@ -62,13 +62,28 @@ def main():
 
     ordemRepo.salvar(ordem)
 
-    ordemSalva = ordemRepo.buscarPorId(ordem.id)
+    #atualiza o status
+    ordem.status = "Em andamento"
+    ordemRepo.atualizar(ordem)
 
-    print(f"OS nº {ordemSalva.id}")
-    print(f"Cliente: {ordemSalva.cliente.nome}")
-    print(f"Veículo: {ordemSalva.veiculo.modelo} ({ordemSalva.veiculo.placa})")
-    print(f"Mecânico: {ordemSalva.mecanico.nome} - {ordemSalva.mecanico.especialidade}")
-    print(f"Total: R$ {ordemSalva.calcular_total():.2f}")
+    os_ = ordemRepo.buscarPorId(ordem.id)
+
+
+    print(f"OS nº {os_.id}")
+    print(f"Cliente: {os_.cliente.nome} ({os_.cliente.telefone})")
+    print(f"Veículo: {os_.veiculo.modelo} - {os_.veiculo.placa}")
+    print(f"Mecânico: {os_.mecanico.nome} ({os_.mecanico.especialidade})")
+
+    print("Serviços:")
+    print(f"  - {servico1.descricao}: R$ {servico1.valor:.2f}")
+    print(f"  - {servico2.descricao}: R$ {servico2.valor:.2f}")
+
+    print("Peças:")
+    print(f"  - {peca1.descricao}: R$ {peca1.valor:.2f}")
+    print(f"  - {peca2.descricao}: R$ {peca2.valor:.2f}")
+
+    print(f"Total: R$ {os_.calcular_total():.2f}")
+    print(f"Status: {os_.status}")
 
     database.fechar()
 

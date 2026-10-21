@@ -1,11 +1,12 @@
 class OrdemDeServico:
 
-    def __init__(self, cliente, veiculo, mecanico, id=None):
+    def __init__(self, cliente, veiculo, mecanico, status="Aberta", id=None):
         self.id = id
         self.cliente = cliente
         self.veiculo = veiculo
         self.mecanico = mecanico
-
+        self.status = status
+        
         self.servicos = []
         self.pecas = []
 

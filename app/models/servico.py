@@ -3,3 +3,6 @@ class Servico:
         self.id = id
         self.descricao = descricao
         self.valor = valor
+
+        #cadastrar serviço
+        # tipagem Classe serviço

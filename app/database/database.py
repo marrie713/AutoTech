@@ -2,7 +2,7 @@ import sqlite3
 
 class Database:
     def __init__(self):
-        self.conexao = sqlite3.connect("oficina.db")
+        self.conexao = sqlite3.connect("oficina.db", check_same_thread=False)
 
     def cursor(self):
         return self.conexao.cursor()

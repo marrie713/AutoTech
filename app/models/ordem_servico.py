@@ -10,7 +10,7 @@ class OrdemDeServico:
         self.servicos = []
         self.pecas = []
 
-
+# aceitar serviço se vier da Classe / Tipagem De Classe
     def adicionar_servico(self, servico):
         self.servicos.append(servico)
 

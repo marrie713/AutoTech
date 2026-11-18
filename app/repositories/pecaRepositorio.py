@@ -12,7 +12,7 @@ class PecaRepositorio:
            id INTEGER PRIMARY KEY AUTOINCREMENT,
            descricao TEXT NOT NULL,
            valor REAL NOT NULL,
-           qntd_disponivel TEXT NOT NULL )         
+           estoque TEXT NOT NULL )         
        """)
         
         self.database.commit()
@@ -21,11 +21,11 @@ class PecaRepositorio:
         cursor = self.database.cursor()
 
         cursor.execute("""
-            INSERT INTO Pecas (descricao, valor, qntd_disponivel)
+            INSERT INTO Pecas (descricao, valor, estoque)
             VALUES (?, ?, ?) """, (
                 peca.descricao,
                 peca.valor,
-                peca.qntd_disponivel
+                peca.estoque
             ))
 
         peca.id = cursor.lastrowid
@@ -54,10 +54,10 @@ class PecaRepositorio:
         cursor = self.database.cursor()
 
         cursor.execute("""
-            UPDATE Pecas SET descricao = ?, valor = ?, qntd_disponivel = ? WHERE id = ? """, (
+            UPDATE Pecas SET descricao = ?, valor = ?, estoque = ? WHERE id = ? """, (
                 peca.nome, 
                 peca.valor,
-                peca.qntd_disponivel,
+                peca.estoque,
                 peca.id
             ))
         
@@ -74,7 +74,7 @@ class PecaRepositorio:
         return Peca(
             descricao=registro[1],
             valor=registro[2],
-            qntd_disponivel=registro[3],
+            estoque=registro[3],
             id=registro[0]
         )
     

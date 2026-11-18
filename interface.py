@@ -1,16 +1,3 @@
-"""
-APEX ERP: interface NiceGUI para o sistema da oficina.
-
-Esta interface só USA os repositórios. Nada do que está em app/ muda.
-O arquivo está dividido em 7 partes:
-  1. Conexão e repositórios
-  2. Constantes (cores, status, menu)
-  3. Layout (menu lateral + cabeçalho), reaproveitado por todas as páginas
-  4. Componentes pequenos (tabela, cartão de indicador, formulários)
-  5. Dashboard
-  6. Cadastros (clientes, veículos, mecânicos, serviços, peças)
-  7. Ordens de Serviço
-"""
 import sqlite3
 from contextlib import contextmanager
 
@@ -32,16 +19,10 @@ from app.repositories.servicoRepositorio import ServicoRepositorio
 from app.repositories.pecaRepositorio import PecaRepositorio
 from app.repositories.ordemservicoRepositorio import OrdemservicoRepositorio
 
-
-# ===============================================================
-# 1. CONEXÃO E REPOSITÓRIOS
-# ===============================================================
-# Na classe Database use: sqlite3.connect("oficina.db", check_same_thread=False)
 database = Database()
 conexao = database.conexao 
 
-# O SQLite só aplica chaves estrangeiras se pedirmos. Assim, excluir um cliente
-# que está em uma OS gera erro (que tratamos), em vez de deixar a OS "órfã".
+# não deixar excluir cliente que está em uma ordem de serviço
 conexao.execute("PRAGMA foreign_keys = ON")
 
 clienteRepo = ClienteRepositorio(conexao)
@@ -51,15 +32,12 @@ servicoRepo = ServicoRepositorio(conexao)
 pecaRepo = PecaRepositorio(conexao)
 ordemRepo = OrdemservicoRepositorio(conexao)
 
-# Ordem importa: tabelas referenciadas primeiro.
+
 for repo in (clienteRepo, veiculoRepo, mecanicoRepo,
              servicoRepo, pecaRepo, ordemRepo):
     repo.criarTabela()
 
 
-# ===============================================================
-# 2. CONSTANTES
-# ===============================================================
 STATUS = ["Orçamento", "Aguardando Peça", "Em Execução", "Concluída", "Cancelada"]
 STATUS_ATIVOS = ["Orçamento", "Aguardando Peça", "Em Execução"]
 
@@ -71,7 +49,7 @@ ESPECIALIDADES = [
     "Elétrica",
 ]
 
-# (título da seção, [(ícone, texto, rota), ...])
+# título das sessões
 MENU = [
     ("Operação & Pátio", [
         ("dashboard", "Dashboard Operacional", "/"),
@@ -91,9 +69,12 @@ MENU = [
 FONTES = (
     '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700'
     '&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">'
+
+    # esse aq é legal tmb 
+    # '<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">'
 )
 
-# CSS próprio: usado onde as classes do Tailwind não vencem o tema do Quasar.
+# CSS para sobreescrever o tailwind
 CSS = """
 body, .q-page, .nicegui-content { background: #0F172A !important; }
 body { font-family: 'Inter', sans-serif; }
@@ -104,7 +85,7 @@ body { font-family: 'Inter', sans-serif; }
 .q-card--bordered { border: 1px solid #334155 !important; }
 """
 
-# Modelo (template) Vue da coluna "status": desenha a etiqueta colorida.
+# cor de status
 SLOT_STATUS = """
 <q-td :props="props">
   <q-badge :color="{'Concluída':'positive','Em Execução':'primary',
@@ -115,7 +96,7 @@ SLOT_STATUS = """
 </q-td>
 """
 
-# Modelo da coluna de ações: dois botões que "emitem" eventos para o Python.
+# eventos
 SLOT_ACOES = """
 <q-td :props="props" class="text-right">
   <q-btn flat dense round icon="edit" color="primary"
@@ -131,9 +112,7 @@ def brl(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-# ===============================================================
-# 3. LAYOUT (menu lateral + cabeçalho)
-# ===============================================================
+
 def item_menu(icone, texto, rota, rota_atual):
     ativo = rota == rota_atual
     cores = ("bg-[#F97316] text-white shadow-md" if ativo
@@ -147,19 +126,14 @@ def item_menu(icone, texto, rota, rota_atual):
 
 @contextmanager
 def layout(titulo, subtitulo, rota_atual):
-    """
-    Monta a "moldura" da página. Uso:
-
-        with layout("Título", "Subtítulo", "/rota"):
-            ...conteúdo da página...
-    """
+    
     ui.dark_mode().enable()
     ui.colors(primary="#F97316", positive="#34D399",
               negative="#EF4444", warning="#F59E0B")
     ui.add_head_html(FONTES)
     ui.add_css(CSS)
 
-    # Menu lateral
+    # menu lateral
     with ui.left_drawer(top_corner=True).props("width=270 bordered") as menu:
         with ui.row().classes("h-16 items-center gap-3 px-5 no-wrap"):
             with ui.element("div").classes(
@@ -167,8 +141,8 @@ def layout(titulo, subtitulo, rota_atual):
                 ui.icon("settings").classes("text-white text-xl")
             with ui.column().classes("gap-0"):
                 with ui.row().classes("gap-1 no-wrap"):
-                    ui.label("APEX").classes("titulo text-lg font-bold text-white")
-                    ui.label("ERP").classes("titulo text-lg font-bold text-[#F97316]")
+                    ui.label("AUTO").classes("titulo text-lg font-bold text-white")
+                    ui.label("TECH").classes("titulo text-lg font-bold text-[#F97316]")
                 ui.label("GESTÃO DE OFICINA").classes(
                     "text-[10px] tracking-widest text-[#94A3B8]")
 
@@ -179,7 +153,7 @@ def layout(titulo, subtitulo, rota_atual):
                 for icone, texto, rota in itens:
                     item_menu(icone, texto, rota, rota_atual)
 
-    # Cabeçalho
+    # header
     with ui.header().classes("h-16 items-center justify-between px-6"):
         with ui.row().classes("items-center gap-3 no-wrap"):
             ui.button(icon="menu", on_click=menu.toggle) \
@@ -191,14 +165,9 @@ def layout(titulo, subtitulo, rota_atual):
                   on_click=lambda: ui.navigate.to("/os?nova=1")) \
             .props("no-caps unelevated").classes("rounded-xl font-semibold")
 
-    # Área de conteúdo
     with ui.column().classes("w-full max-w-[1600px] mx-auto gap-6"):
         yield
 
-
-# ===============================================================
-# 4. COMPONENTES PEQUENOS
-# ===============================================================
 def kpi(titulo, valor, icone, classe_valor="text-white"):
     """Cartão de indicador (número grande com título e ícone)."""
     with ui.card().props("flat bordered").classes("flex-1 min-w-[220px] p-5 gap-1"):
@@ -210,12 +179,7 @@ def kpi(titulo, valor, icone, classe_valor="text-white"):
 
 
 def tabela_dados(colunas, linhas, ao_editar=None, ao_excluir=None):
-    """
-    Tabela padrão.
-      colunas: [("campo", "Rótulo"), ...]
-      linhas:  lista de dicionários (cada um com a chave "id")
-    Se ao_editar/ao_excluir forem passados, aparece a coluna de ações.
-    """
+  
     definicao = [{"name": c, "label": r, "field": c, "align": "left"}
                  for c, r in colunas]
     com_acoes = ao_editar is not None or ao_excluir is not None
@@ -258,10 +222,7 @@ def campo(nome, rotulo, tipo="texto", opcoes=None):
 
 
 def abrir_formulario(cfg, objeto, ao_concluir):
-    """
-    Formulário (janela) genérico de cadastro, montado a partir da lista
-    de campos. objeto=None cria um registro novo; senão edita o existente.
-    """
+    
     editando = objeto is not None
     entradas = {}
 
@@ -274,7 +235,10 @@ def abrir_formulario(cfg, objeto, ao_concluir):
             if c["tipo"] == "texto":
                 entrada = ui.input(c["rotulo"], value=valor or "")
             elif c["tipo"] == "select":
-                entrada = ui.select(c["opcoes"], label=c["rotulo"], value=valor)
+                opcoes = list(c["opcoes"])
+                if valor and valor not in opcoes:
+                    opcoes.append(valor)  # valor antigo que não está na lista
+                entrada = ui.select(opcoes, label=c["rotulo"], value=valor)
             elif c["tipo"] == "inteiro":
                 entrada = ui.number(c["rotulo"], value=valor, min=0, format="%.0f")
             else:  # dinheiro
@@ -304,7 +268,8 @@ def abrir_formulario(cfg, objeto, ao_concluir):
                     cfg["repo"].atualizar(objeto)
                 else:
                     cfg["repo"].salvar(cfg["classe"](*valores))
-            except sqlite3.Error as erro:
+            except Exception as erro: 
+                print("ERRO AO SALVAR:", repr(erro))
                 conexao.rollback()
                 ui.notify(f"Não foi possível salvar: {erro}", type="negative")
                 return
@@ -320,7 +285,7 @@ def abrir_formulario(cfg, objeto, ao_concluir):
 
 
 def linha_os(o):
-    """Transforma uma OrdemDeServico em dicionário para a tabela."""
+    # transforma uma ordem d servico em dicionário para a tabela.
     return {
         "id": o.id,
         "cliente": o.cliente.nome,
@@ -328,14 +293,13 @@ def linha_os(o):
         "mecanico": o.mecanico.nome,
         "servicos": ", ".join(s.descricao for s in o.servicos),
         "pecas": ", ".join(p.descricao for p in o.pecas),
-        "total": brl(o.calcular_total()),  # regra do domínio, não um valor fixo
+        "total": brl(o.calcular_total()), 
         "status": o.status,
     }
 
 
-# ===============================================================
-# 5. DASHBOARD
-# ===============================================================
+
+
 @ui.page("/")
 def pagina_dashboard():
     with layout("Dashboard Operacional",
@@ -382,9 +346,6 @@ def pagina_dashboard():
                             "text-xs text-emerald-400")
 
 
-# ===============================================================
-# 6. CADASTROS (uma configuração por entidade, uma página para todas)
-# ===============================================================
 CADASTROS = {
     "clientes": dict(
         rota="/clientes", singular="Cliente", repo=clienteRepo, classe=Cliente,
@@ -438,8 +399,15 @@ def montar_pagina_cadastro(chave):
                                             for c in cfg["campos"]]
 
                 def editar(row):
-                    abrir_formulario(cfg, cfg["repo"].buscarPorId(row["id"]),
-                                     tabela.refresh)
+                    try:
+                        objeto = cfg["repo"].buscarPorId(row["id"])
+                        if objeto is None:
+                            ui.notify("Registro não encontrado", type="warning")
+                            return
+                        abrir_formulario(cfg, objeto, tabela.refresh)
+                    except Exception as erro: 
+                        print("ERRO AO ABRIR A EDIÇÃO:", repr(erro))
+                        ui.notify(f"Erro ao abrir a edição: {erro}", type="negative")
 
                 def excluir(row):
                     def confirmado():
@@ -469,9 +437,7 @@ for _chave in CADASTROS:
     montar_pagina_cadastro(_chave)
 
 
-# ===============================================================
-# 7. ORDENS DE SERVIÇO
-# ===============================================================
+#ordens de serviço
 def abrir_formulario_os(ordem, ao_concluir):
     editando = ordem is not None
 
@@ -506,7 +472,7 @@ def abrir_formulario_os(ordem, ao_concluir):
         total = ui.label().classes("text-lg font-bold font-mono text-emerald-400")
 
         def atualizar_total():
-            # Monta uma OS temporária só para pedir o total ao domínio.
+            # monta uma ordem de serviço temporária só para pedir o total ao domínio.
             temporaria = OrdemDeServico(None, None, None)
             for i in sel_servicos.value:
                 temporaria.adicionar_servico(servicoRepo.buscarPorId(i))
@@ -608,12 +574,12 @@ def pagina_os(nova: int = 0):
                 .props("no-caps unelevated").classes("rounded-xl")
         tabela()
 
-        if nova:  # veio do botão "Nova OS" do cabeçalho (/os?nova=1)
+        if nova:  # mesmo botão do header
             abrir_formulario_os(None, tabela.refresh)
 
 
-# ===============================================================
-# EXECUÇÃO
-# ===============================================================
+#executar
 if __name__ in {"__main__", "__mp_main__"}:
-    ui.run(title="APEX ERP", favicon="🔧")
+    ui.run(title="AUTO TECH", favicon="⚙️")
+
+    # o emoji é muito grande pra aparecer no navegador, e nao sei como alterar <3

@@ -55,7 +55,7 @@ class PecaRepositorio:
 
         cursor.execute("""
             UPDATE Pecas SET descricao = ?, valor = ?, estoque = ? WHERE id = ? """, (
-                peca.nome, 
+                peca.descricao, 
                 peca.valor,
                 peca.estoque,
                 peca.id
